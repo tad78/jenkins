@@ -23,7 +23,7 @@
 
 case node['platform_family']
 when 'debian'
-  package %w( apt-transport-https fontconfig )
+  package 'apt-transport-https'
 
   apt_repository 'jenkins' do
     uri          node['jenkins']['master']['repository']
