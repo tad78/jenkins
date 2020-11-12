@@ -25,12 +25,14 @@ require_relative '_helper'
 
 class Chef
   class Resource::JenkinsUser < Resource::LWRPBase
-    resource_name :jenkins_user
+    resource_name :jenkins_user # Still needed for Chef 15 and below
+    provides :jenkins_user
 
     # Chef attributes
     identity_attr :id
 
     # Actions
+    actions :create, :delete
     default_action :create
 
     # Attributes
@@ -90,7 +92,7 @@ class Chef
         Chef::Log.info("#{new_resource} exists - skipping")
       else
         converge_by("Create #{new_resource}") do
-          executor.groovy! <<-EOH.gsub(/ ^{12}/, '')
+          executor.groovy! <<-EOH.gsub(/^ {12}/, '')
             user = hudson.model.User.get('#{new_resource.id}')
             user.setFullName('#{new_resource.full_name}')
 
@@ -135,7 +137,7 @@ class Chef
 
       Chef::Log.debug "Load #{new_resource} user information"
 
-      json = executor.groovy <<-EOH.gsub(/ ^{8}/, '')
+      json = executor.groovy <<-EOH.gsub(/^ {8}/, '')
         user = hudson.model.User.get('#{new_resource.id}', false)
 
         if(user == null) {
@@ -168,7 +170,7 @@ class Chef
         println(builder)
       EOH
 
-      return nil if json.nil? || json.empty?
+      return if json.nil? || json.empty?
 
       @current_user = JSON.parse(json, symbolize_names: true)
       @current_user

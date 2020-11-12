@@ -51,7 +51,7 @@ class Chef
     # @see Chef::Resource::JenkinsCredentials#save_credentials_groovy
     #
     def fetch_existing_credentials_groovy(groovy_variable_name)
-      <<-EOH.gsub(/ ^{8}/, '')
+      <<-EOH.gsub(/^ {8}/, '')
         #{credentials_for_id_groovy(new_resource.id, groovy_variable_name)}
       EOH
     end
@@ -60,7 +60,7 @@ class Chef
     # @see Chef::Resource::JenkinsCredentials#resource_attributes_groovy
     #
     def resource_attributes_groovy(groovy_variable_name)
-      <<-EOH.gsub(/ ^{8}/, '')
+      <<-EOH.gsub(/^ {8}/, '')
         #{groovy_variable_name} = [
           id:credentials.id,
           description:credentials.description,
@@ -78,7 +78,7 @@ class Chef
         username: new_resource.username,
       }
 
-      attribute_to_property_map.keys.each do |key|
+      attribute_to_property_map.each_key do |key|
         wanted_credentials[key] = new_resource.send(key)
       end
 

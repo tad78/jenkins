@@ -25,12 +25,14 @@ require_relative '_helper'
 
 class Chef
   class Resource::JenkinsSlave < Resource::LWRPBase
-    resource_name :jenkins_slave
+    resource_name :jenkins_slave # Still needed for Chef 15 and below
+    provides :jenkins_slave
 
     # Chef attributes
     identity_attr :slave_name
 
     # Actions
+    actions :create, :delete, :connect, :disconnect, :online, :offline
     default_action :create
 
     # Attributes
@@ -152,7 +154,7 @@ class Chef
         Chef::Log.info("#{new_resource} exists - skipping")
       else
         converge_by("Create #{new_resource}") do
-          executor.groovy! <<-EOH.gsub(/ ^{12}/, '')
+          executor.groovy! <<-EOH.gsub(/^ {12}/, '')
             import hudson.model.*
             import hudson.slaves.*
             import jenkins.model.*
@@ -318,7 +320,7 @@ class Chef
         launcher_attributes << "current_slave['#{resource_attribute}'] = #{groovy_property}"
       end
 
-      json = executor.groovy! <<-EOH.gsub(/ ^{8}/, '')
+      json = executor.groovy! <<-EOH.gsub(/^ {8}/, '')
         import hudson.model.*
         import hudson.slaves.*
         import jenkins.model.*
@@ -365,7 +367,7 @@ class Chef
         println(builder)
       EOH
 
-      return nil if json.nil? || json.empty?
+      return if json.nil? || json.empty?
 
       @current_slave = JSON.parse(json, symbolize_names: true)
 
@@ -397,7 +399,7 @@ class Chef
         wanted_slave[:idle_delay] = new_resource.idle_delay
       end
 
-      attribute_to_property_map.keys.each do |key|
+      attribute_to_property_map.each_key do |key|
         wanted_slave[key] = new_resource.send(key)
       end
 

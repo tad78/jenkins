@@ -23,9 +23,11 @@ require_relative 'slave'
 
 class Chef
   class Resource::JenkinsJnlpSlave < Resource::JenkinsSlave
-    resource_name :jenkins_jnlp_slave
+    resource_name :jenkins_jnlp_slave # Still needed for Chef 15 and below
+    provides :jenkins_jnlp_slave
 
     # Actions
+    actions :create, :delete, :connect, :disconnect, :online, :offline
     default_action :create
 
     # Attributes
@@ -60,7 +62,7 @@ class Chef
         action :create
       end
 
-      unless Chef::Platform.windows?
+      unless platform?('windows')
         declare_resource(:group, new_resource.group) do
           system(node['jenkins']['master']['use_system_accounts'])
         end
@@ -87,11 +89,11 @@ class Chef
         r.backup(false)
         r.mode('0755')
         r.atomic_update(false)
-        r.notifies :restart, "runit_service[#{new_resource.service_name}]" unless Chef::Platform.windows?
+        r.notifies :restart, "runit_service[#{new_resource.service_name}]" unless platform?('windows')
       end
 
       # The Windows's specific child class manages it's own service
-      return if Chef::Platform.windows?
+      return if platform?('windows')
 
       include_recipe 'runit'
 
@@ -132,7 +134,7 @@ class Chef
     #
     def jnlp_secret
       return @jnlp_secret if @jnlp_secret
-      json = executor.groovy! <<-EOH.gsub(/ ^{8}/, '')
+      json = executor.groovy! <<-EOH.gsub(/^ {8}/, '')
         output = [
           secret:jenkins.slaves.JnlpSlaveAgentProtocol.SLAVE_SECRET.mac('#{new_resource.slave_name}')
         ]
