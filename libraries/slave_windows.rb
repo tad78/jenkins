@@ -24,9 +24,11 @@ require_relative 'slave_jnlp'
 
 class Chef
   class Resource::JenkinsWindowsSlave < Resource::JenkinsJnlpSlave
-    resource_name :jenkins_windows_slave
+    resource_name :jenkins_windows_slave # Still needed for Chef 15 and below
+    provides :jenkins_windows_slave
 
     # Actions
+    actions :create, :delete, :connect, :disconnect, :online, :offline
     default_action :create
 
     # Attributes
@@ -155,10 +157,9 @@ class Chef
       slave_compat_xml = ::File.join(new_resource.remote_fs, "#{new_resource.service_name}.exe.config")
       @slave_compat_xml = Chef::Resource::File.new(slave_compat_xml, run_context)
       @slave_compat_xml.content(
-        <<-EOH.gsub(/ ^{8}/, '')
+        <<-EOH.gsub(/^ {8}/, '')
         <configuration>
           <startup>
-            <supportedRuntime version="v2.0.50727" />
             <supportedRuntime version="v4.0" />
           </startup>
         </configuration>
@@ -234,7 +235,7 @@ class Chef
     def install_service_resource
       return @install_service_resource if @install_service_resource
 
-      code = <<-EOH.gsub(/ ^{8}/, '')
+      code = <<-EOH.gsub(/^ {8}/, '')
         IF "#{wmi_property_from_query(:name, "select * from Win32_Service where name = '#{new_resource.service_name}'")}" == "#{new_resource.service_name}" (
           #{new_resource.service_name}.exe stop
           #{new_resource.service_name}.exe uninstall

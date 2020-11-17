@@ -26,18 +26,17 @@ require_relative '_helper'
 
 class Chef
   class Resource::JenkinsPlugin < Resource::LWRPBase
-    resource_name :jenkins_plugin
+    resource_name :jenkins_plugin # Still needed for Chef 15 and below
+    provides :jenkins_plugin
 
     # Chef attributes
     identity_attr :name
 
     # Actions
+    actions :install, :uninstall, :enable, :disable
     default_action :install
 
     # Attributes
-    attribute :name,
-              kind_of: String,
-              name_attribute: true
     attribute :version,
               kind_of: [String, Symbol],
               default: :latest
@@ -330,7 +329,7 @@ The Jenkins plugin `#{plugin}' is not installed. In order to #{action}
       manifest = ::File.join(plugins_directory, plugin_name, 'META-INF', 'MANIFEST.MF')
       Chef::Log.debug "Load #{plugin_name} plugin information from #{manifest}"
 
-      return nil unless ::File.exist?(manifest)
+      return unless ::File.exist?(manifest)
 
       plugin_manifest = {}
 

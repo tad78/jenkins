@@ -25,18 +25,17 @@ require_relative '_helper'
 
 class Chef
   class Resource::JenkinsJob < Resource::LWRPBase
-    resource_name :jenkins_job
+    resource_name :jenkins_job # Still needed for Chef 15 and below
+    provides :jenkins_job
 
     # Chef attributes
     identity_attr :name
 
     # Actions
+    actions :build, :create, :delete, :disable, :enable
     default_action :create
 
     # Attributes
-    attribute :name,
-              kind_of: String,
-              name_attribute: true
     attribute :config,
               kind_of: String
 
@@ -134,7 +133,11 @@ job must first exist on the Jenkins master!
             when TrueClass, FalseClass
               command_args << "-p #{key}=#{value}"
             else
-              command_args << "-p #{key}='#{value}'"
+              command_args << if value.include?(' ')
+                                "-p #{key}='#{value}'"
+                              else
+                                "-p #{key}=#{value}"
+                              end
             end
           end
 
@@ -266,7 +269,7 @@ job must first exist on the Jenkins master!
       Chef::Log.debug "Load #{new_resource} job information"
 
       response = executor.execute('get-job', escape(new_resource.name))
-      return nil if response.nil? || response =~ /No such job/
+      return if response.nil? || response =~ /No such job/
 
       Chef::Log.debug "Parse #{new_resource} as XML"
       xml = REXML::Document.new(response)

@@ -37,7 +37,8 @@ class Chef
   class Resource::JenkinsPrivateKeyCredentials < Resource::JenkinsUserCredentials
     include Jenkins::Helper
 
-    resource_name :jenkins_private_key_credentials
+    resource_name :jenkins_private_key_credentials # Still needed for Chef 15 and below
+    provides :jenkins_private_key_credentials
 
     # Attributes
     attribute :username,
@@ -90,7 +91,7 @@ class Chef
     # @see https://github.com/jenkinsci/ssh-credentials-plugin/blob/master/src/main/java/com/cloudbees/jenkins/plugins/sshcredentials/impl/BasicSSHUserPrivateKey.java
     #
     def credentials_groovy
-      <<-EOH.gsub(/ ^{8}/, '')
+      <<-EOH.gsub(/^ {8}/, '')
         import com.cloudbees.plugins.credentials.*
         import com.cloudbees.jenkins.plugins.sshcredentials.impl.*
 

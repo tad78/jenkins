@@ -26,12 +26,14 @@ require_relative '_params_validate'
 
 class Chef
   class Resource::JenkinsProxy < Resource::LWRPBase
-    resource_name :jenkins_proxy
+    resource_name :jenkins_proxy # Still needed for Chef 15 and below
+    provides :jenkins_proxy
 
     # Chef attributes
     identity_attr :proxy
 
     # Actions
+    actions :config, :remove
     default_action :config
 
     # Attributes
@@ -162,7 +164,7 @@ class Chef
         println(builder)
       EOH
 
-      return nil if json.nil? || json.empty?
+      return if json.nil? || json.empty?
 
       @current_proxy = JSON.parse(json, symbolize_names: true)
       @current_proxy

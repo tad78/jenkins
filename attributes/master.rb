@@ -32,10 +32,7 @@ default['jenkins']['master'].tap do |master|
   #
   #   node.normal['jenkins']['master']['install_method'] = 'war'
   #
-  master['install_method'] = case node['platform_family']
-                             when 'debian', 'rhel', 'amazon' then 'package'
-                             else 'war'
-                             end
+  master['install_method'] = platform_family?('debian', 'rhel', 'amazon') ? 'package' : 'war'
 
   #
   # The version of the Jenkins master to install. This can be a specific
@@ -132,6 +129,11 @@ default['jenkins']['master'].tap do |master|
   # honor this attribute - it is used for file permission purposes.
   #
   master['group'] = 'jenkins'
+
+  #
+  # Directory mode for Jenkins directories.
+  #
+  master['mode'] = '0755'
 
   #
   # Jenkins user/group should be created as `system` accounts for `war` install.

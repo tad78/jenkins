@@ -22,17 +22,17 @@ require_relative '_params_validate'
 
 class Chef
   class Resource::JenkinsView < Resource::LWRPBase
-    resource_name :jenkins_view
+    resource_name :jenkins_view # Still needed for Chef 15 and below
+    provides :jenkins_view
 
     # Chef attributes
     identity_attr :name
 
     # Actions
+    actions :create, :delete
     default_action :create
 
     # Attributes
-    attribute :name,
-              kind_of: String
     attribute :jobs,
               kind_of: Array,
               default: []
@@ -191,7 +191,7 @@ view must first exist on the Jenkins master!
         GROOVY
 
       response = executor.groovy!(get_view_as_json)
-      return nil if response.nil?
+      return if response.nil?
 
       Chef::Log.debug "Parse #{new_resource} as JSON"
       @current_view = JSON.parse(response, object_class: Mash)
